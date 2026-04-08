@@ -1,0 +1,11 @@
+.agents
+.venv
+tree.py
+logs
+profiles_data
+__pycache__
+*.pyc
+*.pyo
+.env
+uv.lock
+tests/__pycache__

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>adb-turbo — Android Performance Suite</title>
+    <meta name="description" content="Epic Android performance optimization. 44+ commands, 13 categories.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  STICKY HEADER                                -->
+<!-- ══════════════════════════════════════════════ -->
+<header class="top-bar">
+
+    <!-- LEFT: Brand -->
+    <div class="top-bar__brand">
+        <span class="brand-icon">⚡</span>
+        <h1 class="brand-name">EPIC <span class="brand-accent">ADB</span></h1>
+    </div>
+
+    <!-- CENTER: spacer (notification lives at page level) -->
+    <div class="top-bar__spacer"></div>
+
+    <!-- RIGHT: Device selector -->
+    <div class="top-bar__device">
+        <select id="device-select" class="device-select" disabled>
+            <option value="">⏳ Scanning...</option>
+        </select>
+        <button class="icon-btn" onclick="refreshDevices()" title="Refresh">↻</button>
+        <div class="status-chip">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="device-status-text">Checking ADB…</span>
+        </div>
+    </div>
+
+</header>
+
+<!-- Device sub-bar -->
+<div id="device-info" class="sub-bar" style="display:none;">
+    <span>📱 <strong id="device-model">—</strong></span>
+    <span class="sub-bar-sep">·</span>
+    <span id="device-manufacturer">—</span>
+    <span class="sub-bar-sep">·</span>
+    <span id="device-android">—</span>
+    <span class="sub-bar-sep">·</span>
+    <span id="device-location"></span>
+
+    <!-- NOTIFICATION slides in from right inside this bar -->
+    <div id="notif-bar" class="notif-bar" role="status" aria-live="polite">
+        <span id="notif-icon" class="notif-icon"></span>
+        <span id="notif-text" class="notif-text"></span>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  TWO-PANEL WORKSPACE                          -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="workspace">
+
+    <!-- ════════════════════════════════
+         LEFT SIDEBAR
+         ════════════════════════════════ -->
+    <aside class="sidebar" id="device-details-card" style="display:none;">
+
+        <!-- 1. System Status -->
+        <div class="panel panel--registry">
+            <div class="panel__hdr">
+                <span class="panel__icon">📊</span>
+                <span class="panel__title">System Status</span>
+                <span class="refresh-indicator" id="refresh-indicator">🔄</span>
+                <button class="icon-btn" onclick="toggleAutoRefresh()" title="Toggle refresh">
+                    <span id="auto-refresh-icon">⏸</span>
+                </button>
+            </div>
+            <div id="device-details-grid" class="registry-list"></div>
+        </div>
+
+        <!-- 2. Network DNS -->
+        <div class="panel panel--dns" id="dns-card" style="display:none;">
+            <div class="panel__hdr panel__hdr--clickable" onclick="toggleDnsPanel()">
+                <span class="panel__icon">🌐</span>
+                <span class="panel__title">Network DNS</span>
+                <div class="dns-hdr-actions" onclick="event.stopPropagation()">
+                    <button class="mini-btn" onclick="runDnsTest()">⚡ Test</button>
+                    <button class="mini-btn" onclick="resetDns()">↺ Reset</button>
+                </div>
+                <span class="collapse-caret open" id="dns-caret">▼</span>
+            </div>
+            <div id="dns-panel-body">
+                <div id="dns-results-container"></div>
+            </div>
+        </div>
+
+        <!-- 3. Profiles -->
+        <div class="panel panel--presets" id="profiles-card" style="display:none;">
+            <div class="panel__hdr panel__hdr--clickable" onclick="toggleProfilesPanel()" id="profiles-hdr">
+                <span class="panel__icon">🚀</span>
+                <span class="panel__title">Profiles</span>
+                <div class="dns-hdr-actions" onclick="event.stopPropagation()">
+                    <button class="mini-btn" onclick="backupCurrentSettings()" title="Save current settings">💾</button>
+                    <button class="mini-btn" onclick="exportProfile()" title="Export latest backup">📤</button>
+                    <button class="mini-btn" onclick="showImportDialog()" title="Import profile">📁</button>
+                </div>
+                <span class="collapse-caret open" id="profiles-caret">▼</span>
+            </div>
+            <div id="profiles-panel-body">
+                <div class="preset-pills">
+                    <button class="preset-pill preset-pill--perf"        onclick="applyPreset('high_performance')"  title="Max CPU/GPU — disables thermal throttling">🚀 High Perf</button>
+                    <button class="preset-pill preset-pill--balanced"    onclick="applyPreset('medium_performance')" title="Balanced power and performance">⚖️ Balanced</button>
+                    <button class="preset-pill preset-pill--eco"         onclick="applyPreset('max_battery')"       title="Maximize battery life">🔋 Eco Save</button>
+                    <button class="preset-pill preset-pill--quality"     onclick="applyPreset('max_quality')"       title="Best visual and audio quality">💎 Max Quality</button>
+                    <button class="preset-pill preset-pill--recommended" onclick="applyPreset('recommended')"       title="Recommended for daily use">⭐ Recommended</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Saved Backups -->
+        <div class="panel panel--backups" id="backups-list" style="display:none;">
+            <div class="panel__hdr panel__hdr--clickable" onclick="toggleBackupsPanel()">
+                <span class="panel__icon">💾</span>
+                <span class="panel__title">Saved Backups</span>
+                <span class="backup-count" id="backup-count"></span>
+                <span class="collapse-caret open" id="backups-caret">▼</span>
+            </div>
+            <div id="backups-panel-body">
+                <div id="backups-container"></div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ════════════════════════════════
+         RIGHT CONTENT AREA
+         ════════════════════════════════ -->
+    <main class="content-area">
+
+        <!-- Command Core sticky header -->
+        <div class="cmd-header">
+            <span class="cmd-header__title">🛠️ Command Core</span>
+            <div class="cmd-header__actions">
+                <input type="text" id="cmd-search" class="cmd-search"
+                       placeholder="🔍 Filter commands…"
+                       oninput="filterCommands(this.value)">
+                <button class="mini-btn" onclick="toggleAllDetails()">
+                    <span id="expand-collapse-text">Expand All</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Dense table categories -->
+        <div id="categories-container" class="categories-table"></div>
+
+    </main>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
