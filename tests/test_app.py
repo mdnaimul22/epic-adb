@@ -4,7 +4,8 @@ Tests for Flask application endpoints
 
 import pytest
 from unittest.mock import patch, Mock
-from src.main import app
+from src.schema import DeviceModel
+from main import app
 
 
 @pytest.fixture
@@ -53,8 +54,8 @@ class TestAPIEndpoints:
     def test_get_devices(self, mock_devices, client):
         """Test /api/devices endpoint"""
         mock_devices.return_value = [
-            {'id': 'device1', 'model': 'Pixel 6', 'status': 'connected'},
-            {'id': 'device2', 'model': 'Galaxy S21', 'status': 'connected'}
+            DeviceModel(id='device1', model='Pixel 6', status='connected'),
+            DeviceModel(id='device2', model='Galaxy S21', status='connected')
         ]
         
         response = client.get('/api/devices')

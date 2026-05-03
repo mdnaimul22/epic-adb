@@ -12,7 +12,7 @@ from src.schema.models import ADBCommandModel as ADBCommand, ADBCategoryModel as
 class TestExecuteADBCommand:
     """Tests for execute_adb_command function"""
     
-    @patch('src.providers.adb_provider.subprocess.run')
+    @patch('src.providers.adb.subprocess.run')
     def test_execute_command_success(self, mock_run):
         """Test successful command execution"""
         mock_run.return_value = Mock(
@@ -35,7 +35,7 @@ class TestExecuteADBCommand:
         assert "device123" in args
         assert "shell" in args
     
-    @patch('src.providers.adb_provider.subprocess.run')
+    @patch('src.providers.adb.subprocess.run')
     def test_execute_command_failure(self, mock_run):
         """Test failed command execution"""
         mock_run.return_value = Mock(
@@ -49,7 +49,7 @@ class TestExecuteADBCommand:
         assert success is False
         assert stderr == "error: device not found"
     
-    @patch('src.providers.adb_provider.subprocess.run')
+    @patch('src.providers.adb.subprocess.run')
     def test_execute_command_timeout(self, mock_run):
         """Test command timeout handling"""
         import subprocess
@@ -60,7 +60,7 @@ class TestExecuteADBCommand:
         assert success is False
         assert "timed out" in stderr.lower()
     
-    @patch('src.providers.adb_provider.subprocess.run')
+    @patch('src.providers.adb.subprocess.run')
     def test_execute_command_no_device(self, mock_run):
         """Test command execution without device ID"""
         mock_run.return_value = Mock(
@@ -80,7 +80,7 @@ class TestExecuteADBCommand:
 class TestGetCommandState:
     """Tests for get_command_state function"""
     
-    @patch('src.services.device_service.execute_adb_command')
+    @patch('src.services.device.execute_adb_command')
     def test_parse_boolean_true(self, mock_execute):
         """Test parsing boolean true value"""
         mock_execute.return_value = (True, "1", "")
@@ -92,7 +92,7 @@ class TestGetCommandState:
         state = get_command_state("device123", "shell settings get global test")
         assert state is True
     
-    @patch('src.services.device_service.execute_adb_command')
+    @patch('src.services.device.execute_adb_command')
     def test_parse_boolean_false(self, mock_execute):
         """Test parsing boolean false value"""
         mock_execute.return_value = (True, "0", "")
@@ -104,7 +104,7 @@ class TestGetCommandState:
         state = get_command_state("device123", "shell settings get global test")
         assert state is False
     
-    @patch('src.services.device_service.execute_adb_command')
+    @patch('src.services.device.execute_adb_command')
     def test_parse_null_value(self, mock_execute):
         """Test parsing null/empty value"""
         mock_execute.return_value = (True, "null", "")
@@ -116,7 +116,7 @@ class TestGetCommandState:
         state = get_command_state("device123", "shell settings get global test")
         assert state is None
     
-    @patch('src.services.device_service.execute_adb_command')
+    @patch('src.services.device.execute_adb_command')
     def test_parse_float_value(self, mock_execute):
         """Test parsing float value (animation scales)"""
         mock_execute.return_value = (True, "1.0", "")
@@ -127,7 +127,7 @@ class TestGetCommandState:
         state = get_command_state("device123", "shell settings get global window_animation_scale")
         assert state is False
     
-    @patch('src.services.device_service.execute_adb_command')
+    @patch('src.services.device.execute_adb_command')
     def test_parse_key_value_pair(self, mock_execute):
         """Test parsing key=value format"""
         mock_execute.return_value = (True, "mFixedPerformanceModeEnabled=true", "")
@@ -142,7 +142,7 @@ class TestGetCommandState:
 class TestCheckADBAvailable:
     """Tests for check_adb_available function"""
     
-    @patch('src.providers.adb_provider.subprocess.run')
+    @patch('src.providers.adb.subprocess.run')
     def test_adb_available(self, mock_run):
         """Test when ADB is available"""
         mock_run.return_value = Mock(
@@ -154,7 +154,7 @@ class TestCheckADBAvailable:
         assert available is True
         assert "version" in message.lower()
     
-    @patch('adb_commands.subprocess.run')
+    @patch('src.providers.adb.subprocess.run')
     def test_adb_not_found(self, mock_run):
         """Test when ADB is not found"""
         mock_run.side_effect = FileNotFoundError()

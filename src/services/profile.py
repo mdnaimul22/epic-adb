@@ -4,22 +4,20 @@ Handles backup, restore, and presets with detailed background rules
 """
 
 import json
-import logging
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
-from pathlib import Path
-from src.config import settings
+from src.config import Settings, setup_logger, ensure_dir, exists, read_json, write_json, get_abs_path
 from src.schema import ProfileModel, SettingStateModel
 from src.providers import execute_adb_command
 from src.core import COMMAND_CATEGORIES
 from .device import get_command_state
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "service.log", name="epic_adb.services.profile")
 
-# Profile storage directory
-PROFILES_DIR = Path(settings.DATA_DIR)
-PROFILES_DIR.mkdir(exist_ok=True)
-PROFILES_FILE = PROFILES_DIR / "profiles.json"
+# Profile storage configuration
+PROFILES_DIR_REL = "profiles_data"
+ensure_dir(PROFILES_DIR_REL)
+PROFILES_FILE_REL = f"{PROFILES_DIR_REL}/profiles.json"
 
 
 class ProfileManager:
@@ -30,10 +28,9 @@ class ProfileManager:
     
     def _load_profiles(self) -> Dict:
         """Load profiles from disk"""
-        if PROFILES_FILE.exists():
+        if exists(PROFILES_FILE_REL):
             try:
-                with open(PROFILES_FILE, 'r') as f:
-                    return json.load(f)
+                return read_json(PROFILES_FILE_REL)
             except Exception as e:
                 logger.error(f"Error loading profiles: {e}")
                 return {}
@@ -42,8 +39,7 @@ class ProfileManager:
     def _save_profiles(self):
         """Save profiles to disk"""
         try:
-            with open(PROFILES_FILE, 'w') as f:
-                json.dump(self.profiles, f, indent=2)
+            write_json(PROFILES_FILE_REL, self.profiles)
         except Exception as e:
             logger.error(f"Error saving profiles: {e}")
             raise

@@ -5,12 +5,12 @@ Supports Private DNS (hostname mode) for Android 9+
 
 import socket
 import time
-import logging
 from typing import List, Optional, Tuple
 from src.providers import execute_adb_command
 from src.schema import DnsProviderModel, DnsLatencyResultModel, DnsTestResponseModel
+from src.config import Settings, setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "service.log", name="epic_adb.services.dns")
 
 # List of popular DNS providers (DoH Hostnames)
 DNS_PROVIDERS = [

@@ -4,12 +4,12 @@ Uses providers and returns schema-validated data
 """
 
 import re
-import logging
 from typing import List, Dict, Optional, Tuple
 from src.providers import execute_adb_command, get_raw_connected_devices
 from src.schema import DeviceModel, DeviceInfoModel, DeviceDetailsModel
+from src.config import Settings, setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "service.log", name="epic_adb.services.device")
 
 
 def get_connected_devices() -> List[DeviceModel]:
@@ -82,7 +82,7 @@ def get_command_state(device_id: str, get_cmd: str) -> Optional[bool]:
     try:
         return float(value) > 0
     except ValueError:
-        pass
+        logger.debug(f"Value '{value}' is not a numeric state.")
         
     return True if value and value != 'off' else None
 

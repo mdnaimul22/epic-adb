@@ -3,13 +3,13 @@ API Response Utilities - Global Helpers
 Standardized JSON responses for Flask routes.
 """
 
-import logging
 from flask import jsonify
 from typing import Any, Optional, Tuple
 from src.schema.models import APIResponseModel
 from src.helpers.date_utils import get_now_iso
+from src.config import Settings, setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "helper.log", name="epic_adb.helpers.responses")
 
 def api_success(data: Any = None, message: str = None, status: int = 200) -> Tuple[Any, int]:
     """Standardized success response"""

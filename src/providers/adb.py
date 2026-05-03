@@ -5,11 +5,10 @@ Executes shell commands and manages connectivity
 
 import subprocess
 import shlex
-import logging
 from typing import List, Optional, Tuple
-from src.config import settings
+from src.config import Settings, setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "provider.log", name="epic_adb.providers.adb")
 
 
 def execute_adb_command(device_id: Optional[str], command: str, timeout: int = None) -> Tuple[bool, str, str]:
@@ -18,7 +17,7 @@ def execute_adb_command(device_id: Optional[str], command: str, timeout: int = N
     Automatically uses shell=True when command contains shell pipes (|).
     Returns: (success, stdout, stderr)
     """
-    _timeout = timeout or settings.ADB_TIMEOUT
+    _timeout = timeout or Settings.ADB_TIMEOUT
     try:
         # Build the adb prefix
         prefix = f'adb -s {device_id}' if device_id else 'adb'

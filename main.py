@@ -3,25 +3,23 @@ adb-turbo - Main Entry Point
 Clean Architecture Implementation with CLI support
 """
 
-import os
 import sys
 import argparse
 import signal
 import atexit
-import logging
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 
-# Add current directory to path for Clean Architecture
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from src.config import settings, setup_logging
+from src.config import Settings, setup_logger
 from src.helpers.network import kill_process_on_port
 from src.api import api_bp
 
+# Standardized logger
+logger = setup_logger(Settings.LOG_DIR / "app.log", name="epic_adb.main")
+
 # Initialize Flask app
-app = Flask(__name__, static_folder=settings.STATIC_DIR, template_folder=settings.STATIC_DIR)
-CORS(app, origins=settings.CORS_ORIGINS)
+app = Flask(__name__, static_folder=Settings.STATIC_DIR, template_folder=Settings.STATIC_DIR)
+CORS(app, origins=Settings.CORS_ORIGINS)
 
 # Register API Blueprint
 app.register_blueprint(api_bp, url_prefix='/api')
@@ -30,11 +28,11 @@ app.register_blueprint(api_bp, url_prefix='/api')
 @app.route('/')
 def index():
     """Serve the main web interface"""
-    return send_from_directory(settings.STATIC_DIR, 'index.html')
+    return send_from_directory(Settings.STATIC_DIR, 'index.html')
 
 
-def print_banner(url):
-    """Print a nice banner with the server URL"""
+def log_banner(url):
+    """Log a nice banner with the server URL"""
     banner = f"""
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
@@ -47,28 +45,28 @@ def print_banner(url):
 
 Press Ctrl+C to stop the server
 """
-    print(banner)
+    logger.info(banner)
 
 
 def cleanup():
     """Cleanup function to run on exit"""
-    print(f"\n\n👋 Server stopped. Port {settings.ADB_PORT} is now free.")
-    print("Thank you for using adb-turbo!")
+    logger.info(f"Server stopped. Port {Settings.ADB_PORT} is now free.")
+    logger.info("Thank you for using adb-turbo!")
 
 
 def start_web_server():
     """Configure and start the Flask web server"""
-    setup_logging(settings)
-    
     # Ensure port is free before starting
-    kill_process_on_port(settings.ADB_PORT)
-    print_banner(settings.url)
+    kill_process_on_port(Settings.ADB_PORT)
+    log_banner(Settings.url)
     
     try:
-        logging.getLogger(__name__).info(f"Starting Flask server on {settings.ADB_HOST}:{settings.ADB_PORT}")
-        app.run(host=settings.ADB_HOST, port=settings.ADB_PORT, debug=settings.DEBUG, use_reloader=False)
+        logger.info(f"Starting Flask server on {Settings.ADB_HOST}:{Settings.ADB_PORT}")
+        app.run(host=Settings.ADB_HOST, port=Settings.ADB_PORT, debug=Settings.DEBUG, use_reloader=False)
     except (KeyboardInterrupt, SystemExit):
-        pass
+        logger.info("Server shutting down...")
+    except Exception as e:
+        logger.error(f"Unexpected error during server execution: {e}")
 
 
 if __name__ == '__main__':

@@ -9,3 +9,7 @@ __pycache__
 .env
 uv.lock
 tests/__pycache__
+# Node
+node_modules/
+dist/
+.svelte-kit/

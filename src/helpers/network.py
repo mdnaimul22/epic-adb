@@ -8,10 +8,10 @@ import signal
 import subprocess
 import shlex
 import time
-import logging
 from typing import List
+from src.config import Settings, setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "helper.log", name="epic_adb.helpers.network")
 
 def get_pids_on_port(port: int) -> List[int]:
     """Get all PIDs listening on a specific port"""
@@ -48,10 +48,10 @@ def kill_process_on_port(port: int) -> bool:
                 os.kill(pid, 0) # Still alive?
                 os.kill(pid, signal.SIGKILL) # Force it
             except OSError:
-                pass # Already dead
+                logger.debug(f"Process {pid} already terminated after SIGTERM.")
                 
         except ProcessLookupError:
-            pass # Already gone
+            logger.debug(f"Process {pid} lookup failed, already gone.")
         except Exception as e:
             logger.error(f"Failed to kill process {pid}: {e}")
             success = False

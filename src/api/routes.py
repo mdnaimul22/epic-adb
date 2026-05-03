@@ -3,7 +3,6 @@ API Routes - Flask Blueprints for adb-turbo
 Standardized responses using Pydantic schema
 """
 
-import logging
 from flask import Blueprint, jsonify, request, send_from_directory
 from src.helpers.responses import api_success, api_error
 from src.providers import check_adb_available, execute_adb_command
@@ -17,9 +16,9 @@ from src.services import (
     dns_service
 )
 from src.core import get_categories_json, COMMAND_CATEGORIES
-from src.config import settings
+from src.config import Settings, setup_logger
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "api.log", name="epic_adb.api.routes")
 api_bp = Blueprint('api', __name__)
 
 
