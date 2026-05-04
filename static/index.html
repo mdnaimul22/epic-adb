@@ -1,162 +1,352 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>adb-turbo — Android Performance Suite</title>
     <meta name="description" content="Epic Android performance optimization. 44+ commands, 13 categories.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link rel="icon" type="image/png" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
 <body>
 
-<!-- ══════════════════════════════════════════════ -->
-<!--  STICKY HEADER                                -->
-<!-- ══════════════════════════════════════════════ -->
-<header class="top-bar">
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  STICKY HEADER                                -->
+    <!-- ══════════════════════════════════════════════ -->
+    <header class="top-bar">
 
-    <!-- LEFT: Brand -->
-    <div class="top-bar__brand">
-        <span class="brand-icon">⚡</span>
-        <h1 class="brand-name">EPIC <span class="brand-accent">ADB</span></h1>
-    </div>
+        <!-- LEFT: Brand -->
+        <div class="top-bar__brand">
+            <span class="brand-icon">⚡</span>
+            <h1 class="brand-name">EPIC <span class="brand-accent">ADB</span></h1>
+            <a href="https://github.com/mdnaimul22/epic-adb" target="_blank" rel="noopener" class="brand-github" title="View on GitHub">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            </a>
+        </div>
 
-    <!-- CENTER: spacer (notification lives at page level) -->
-    <div class="top-bar__spacer"></div>
+        <!-- CENTER: spacer (notification lives at page level) -->
+        <div class="top-bar__spacer"></div>
 
-    <!-- RIGHT: Device selector -->
-    <div class="top-bar__device">
-        <select id="device-select" class="device-select" disabled>
-            <option value="">⏳ Scanning...</option>
-        </select>
-        <button class="icon-btn" onclick="refreshDevices()" title="Refresh">↻</button>
-        <div class="status-chip">
-            <span class="status-dot" id="status-dot"></span>
-            <span id="device-status-text">Checking ADB…</span>
+        <!-- RIGHT: Device selector -->
+        <div class="top-bar__device">
+            <select id="device-select" class="device-select" disabled>
+                <option value="">⏳ Scanning...</option>
+            </select>
+            <button class="icon-btn" onclick="refreshDevices()" title="Refresh">↻</button>
+            <div class="status-chip">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="device-status-text">Checking ADB…</span>
+            </div>
+        </div>
+
+        <!-- FAR RIGHT: Theme Switcher -->
+        <button class="theme-switcher" id="themeBtn" title="Switch theme">🎨</button>
+
+    </header>
+
+    <!-- Device sub-bar -->
+    <div id="device-info" class="sub-bar" style="display:none;">
+        <span>📱 <strong id="device-model">—</strong></span>
+        <span class="sub-bar-sep">·</span>
+        <span id="device-manufacturer">—</span>
+        <span class="sub-bar-sep">·</span>
+        <span id="device-android">—</span>
+        <span class="sub-bar-sep">·</span>
+        <span id="device-location"></span>
+
+        <!-- NOTIFICATION slides in from right inside this bar -->
+        <div id="notif-bar" class="notif-bar" role="status" aria-live="polite">
+            <span id="notif-icon" class="notif-icon"></span>
+            <span id="notif-text" class="notif-text"></span>
         </div>
     </div>
 
-</header>
+    <!-- ══════════════════════════════════════════════ -->
+    <!--  TWO-PANEL WORKSPACE                          -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="workspace">
 
-<!-- Device sub-bar -->
-<div id="device-info" class="sub-bar" style="display:none;">
-    <span>📱 <strong id="device-model">—</strong></span>
-    <span class="sub-bar-sep">·</span>
-    <span id="device-manufacturer">—</span>
-    <span class="sub-bar-sep">·</span>
-    <span id="device-android">—</span>
-    <span class="sub-bar-sep">·</span>
-    <span id="device-location"></span>
-
-    <!-- NOTIFICATION slides in from right inside this bar -->
-    <div id="notif-bar" class="notif-bar" role="status" aria-live="polite">
-        <span id="notif-icon" class="notif-icon"></span>
-        <span id="notif-text" class="notif-text"></span>
-    </div>
-</div>
-
-<!-- ══════════════════════════════════════════════ -->
-<!--  TWO-PANEL WORKSPACE                          -->
-<!-- ══════════════════════════════════════════════ -->
-<div class="workspace">
-
-    <!-- ════════════════════════════════
+        <!-- ════════════════════════════════
          LEFT SIDEBAR
          ════════════════════════════════ -->
-    <aside class="sidebar" id="device-details-card" style="display:none;">
+        <aside class="sidebar" id="device-details-card" style="display:none;">
 
-        <!-- 1. System Status -->
-        <div class="panel panel--registry">
-            <div class="panel__hdr">
-                <span class="panel__icon">📊</span>
-                <span class="panel__title">System Status</span>
-                <span class="refresh-indicator" id="refresh-indicator">🔄</span>
-                <button class="icon-btn" onclick="toggleAutoRefresh()" title="Toggle refresh">
-                    <span id="auto-refresh-icon">⏸</span>
-                </button>
-            </div>
-            <div id="device-details-grid" class="registry-list"></div>
-        </div>
-
-        <!-- 2. Network DNS -->
-        <div class="panel panel--dns" id="dns-card" style="display:none;">
-            <div class="panel__hdr panel__hdr--clickable" onclick="toggleDnsPanel()">
-                <span class="panel__icon">🌐</span>
-                <span class="panel__title">Network DNS</span>
-                <div class="dns-hdr-actions" onclick="event.stopPropagation()">
-                    <button class="mini-btn" onclick="runDnsTest()">⚡ Test</button>
-                    <button class="mini-btn" onclick="resetDns()">↺ Reset</button>
+            <!-- 1. System Status (Alpine Component) -->
+            <div class="panel panel--registry" x-data="systemStatus"
+                @device-info-loaded.window="handleDeviceInfo($event.detail)">
+                <div class="panel__hdr">
+                    <span class="panel__icon" style="font-size: 1.1rem;">📊</span>
+                    <span class="panel__title">System Status</span>
+                    <span class="refresh-indicator" id="refresh-indicator">🔄</span>
+                    <button class="icon-btn" onclick="toggleAutoRefresh()" title="Toggle refresh">
+                        <span id="auto-refresh-icon">⏸</span>
+                    </button>
                 </div>
-                <span class="collapse-caret open" id="dns-caret">▼</span>
-            </div>
-            <div id="dns-panel-body">
-                <div id="dns-results-container"></div>
-            </div>
-        </div>
-
-        <!-- 3. Profiles -->
-        <div class="panel panel--presets" id="profiles-card" style="display:none;">
-            <div class="panel__hdr panel__hdr--clickable" onclick="toggleProfilesPanel()" id="profiles-hdr">
-                <span class="panel__icon">🚀</span>
-                <span class="panel__title">Profiles</span>
-                <div class="dns-hdr-actions" onclick="event.stopPropagation()">
-                    <button class="mini-btn" onclick="backupCurrentSettings()" title="Save current settings">💾</button>
-                    <button class="mini-btn" onclick="exportProfile()" title="Export latest backup">📤</button>
-                    <button class="mini-btn" onclick="showImportDialog()" title="Import profile">📁</button>
-                </div>
-                <span class="collapse-caret open" id="profiles-caret">▼</span>
-            </div>
-            <div id="profiles-panel-body">
-                <div class="preset-pills">
-                    <button class="preset-pill preset-pill--perf"        onclick="applyPreset('high_performance')"  title="Max CPU/GPU — disables thermal throttling">🚀 High Perf</button>
-                    <button class="preset-pill preset-pill--balanced"    onclick="applyPreset('medium_performance')" title="Balanced power and performance">⚖️ Balanced</button>
-                    <button class="preset-pill preset-pill--eco"         onclick="applyPreset('max_battery')"       title="Maximize battery life">🔋 Eco Save</button>
-                    <button class="preset-pill preset-pill--quality"     onclick="applyPreset('max_quality')"       title="Best visual and audio quality">💎 Max Quality</button>
-                    <button class="preset-pill preset-pill--recommended" onclick="applyPreset('recommended')"       title="Recommended for daily use">⭐ Recommended</button>
+                <div id="device-details-grid" class="registry-list">
+                    <template x-for="group in groups" :key="group.label">
+                        <div class="reg-group">
+                            <div class="reg-group__title">
+                                <span x-text="group.title"></span>
+                                <span style="opacity:.8" x-text="group.label"></span>
+                            </div>
+                            <div class="reg-rows">
+                                <template x-for="item in group.keys.filter(k => group.data[k.key])" :key="item.key">
+                                    <div>
+                                        <div class="reg-row">
+                                            <span class="reg-row__ico" x-text="item.ico || ''"></span>
+                                            <span class="reg-row__key" x-text="item.label"></span>
+                                            <span class="reg-row__val" :class="getValColor(item, group.data[item.key])"
+                                                x-text="group.data[item.key] + (item.suffix || '')"></span>
+                                        </div>
+                                        <template x-if="item.bar && item.key === 'level'">
+                                            <div class="reg-bar">
+                                                <div class="reg-bar__fill" :class="{
+                                                     'reg-bar__fill--danger': +group.data[item.key] < 20,
+                                                     'reg-bar__fill--warn': +group.data[item.key] >= 20 && +group.data[item.key] < 50
+                                                 }"
+                                                    :style="'width:' + Math.min(100, Math.max(0, +group.data[item.key])) + '%'">
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
-        </div>
 
-        <!-- 4. Saved Backups -->
-        <div class="panel panel--backups" id="backups-list" style="display:none;">
-            <div class="panel__hdr panel__hdr--clickable" onclick="toggleBackupsPanel()">
-                <span class="panel__icon">💾</span>
-                <span class="panel__title">Saved Backups</span>
-                <span class="backup-count" id="backup-count"></span>
-                <span class="collapse-caret open" id="backups-caret">▼</span>
+            <!-- 2. Network DNS -->
+            <div class="panel panel--dns" id="dns-card" x-data="{ ...dnsTester(), dnsPanelOpen: true }"
+                @device-selected.window="handleDeviceSelection($event.detail)">
+                <div class="panel__hdr panel__hdr--clickable" @click="dnsPanelOpen = !dnsPanelOpen">
+                    <span class="panel__icon">🌐</span>
+                    <span class="panel__title">Network DNS</span>
+                    <div class="dns-hdr-actions" @click.stop>
+                        <button class="mini-btn" @click="runTest()" :disabled="isLoading || !deviceId">⚡ Test</button>
+                        <button class="mini-btn" @click="resetDns()" :disabled="isLoading || !deviceId">↺ Reset</button>
+                    </div>
+                    <span class="collapse-caret" :class="{ 'open': dnsPanelOpen }">▼</span>
+                </div>
+                <div x-show="dnsPanelOpen">
+                    <div id="dns-results-container">
+                        <template x-if="error && !isLoading">
+                            <div class="dns-empty" style="color:var(--c-danger)" x-text="'❌ ' + error"></div>
+                        </template>
+                        <div>
+                            <template
+                                x-for="(r, index) in [...results].sort((a,b) => (a.latency_ms ?? 9999) - (b.latency_ms ?? 9999))"
+                                :key="r.name">
+                                <div class="dns-row" :class="{ 'dns-row--best': index === 0 && r.latency_ms !== null }">
+                                    <span class="dns-row__name" x-text="r.name"></span>
+                                    <span class="dns-row__lat" :class="getLatClass(getTier(r.latency_ms))"
+                                        x-text="r.latency_ms != null ? r.latency_ms + 'ms' : (isLoading ? 'testing...' : '--')"></span>
+                                    <span class="dns-row__badge" :class="getBdgClass(getTier(r.latency_ms))"
+                                        x-show="r.latency_ms != null" x-text="getLabel(getTier(r.latency_ms))"></span>
+                                </div>
+                            </template>
+                            <template x-if="bestResult && !isLoading">
+                                <div class="dns-suggestion">
+                                    <span>⭐ Best: <strong x-text="bestResult.name"></strong> <span
+                                            class="dns-latency">&mdash; <span
+                                                x-text="bestResult.latency_ms"></span>ms</span></span>
+                                    <button class="dns-row__apply"
+                                        @click="applyDns(bestResult.doh || bestResult.hostname || bestResult.address || bestResult.name)"
+                                        style="flex-shrink:0">Apply ⚡</button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="backups-panel-body">
-                <div id="backups-container"></div>
+
+            <div x-data="profileManager" @device-info-loaded.window="handleDeviceLoaded($event.detail)">
+                <!-- 3. Profiles -->
+                <div class="panel panel--presets" id="profiles-card" x-show="deviceId"
+                    x-data="{ profilesPanelOpen: true }">
+                    <div class="panel__hdr panel__hdr--clickable" @click="profilesPanelOpen = !profilesPanelOpen">
+                        <span class="panel__icon">🚀</span>
+                        <span class="panel__title">Profiles</span>
+                        <div class="dns-hdr-actions" @click.stop>
+                            <button class="mini-btn" @click="backupCurrentSettings()"
+                                title="Save current settings">💾</button>
+                            <button class="mini-btn" @click="exportBackup(0)" title="Export latest backup">📤</button>
+                            <button class="mini-btn" @click="showImportDialog()" title="Import profile">📁</button>
+                        </div>
+                        <span class="collapse-caret" :class="{ 'open': profilesPanelOpen }">▼</span>
+                    </div>
+                    <div x-show="profilesPanelOpen">
+                        <div class="preset-pills">
+                            <button class="preset-pill preset-pill--perf" @click="applyPreset('high_performance')"
+                                title="Max CPU/GPU — disables thermal throttling">🚀 High Perf</button>
+                            <button class="preset-pill preset-pill--balanced" @click="applyPreset('medium_performance')"
+                                title="Balanced power and performance">⚖️ Balanced</button>
+                            <button class="preset-pill preset-pill--eco" @click="applyPreset('max_battery')"
+                                title="Maximize battery life">🔋 Eco Save</button>
+                            <button class="preset-pill preset-pill--quality" @click="applyPreset('max_quality')"
+                                title="Best visual and audio quality">💎 Max Quality</button>
+                            <button class="preset-pill preset-pill--recommended" @click="applyPreset('recommended')"
+                                title="Recommended for daily use">⭐ Recommended</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Saved Backups -->
+                <div class="panel panel--backups" id="backups-list" x-show="deviceId && backups.length > 0"
+                    x-data="{ backupsPanelOpen: true }">
+                    <div class="panel__hdr panel__hdr--clickable" @click="backupsPanelOpen = !backupsPanelOpen">
+                        <span class="panel__icon">💾</span>
+                        <span class="panel__title">Saved Backups</span>
+                        <span class="backup-count" x-text="backups.length"></span>
+                        <span class="collapse-caret" :class="{ 'open': backupsPanelOpen }">▼</span>
+                    </div>
+                    <div x-show="backupsPanelOpen">
+                        <div id="backups-container">
+                            <template x-for="(backup, index) in backups" :key="index">
+                                <div class="backup-item" x-data="{ isEditing: false, editName: '' }"
+                                    x-init="$watch('isEditing', val => { if(val) setTimeout(() => $refs.editInput.focus(), 50) })">
+                                    <div class="backup-item__main">
+                                        <div class="backup-item__info">
+                                            <div class="backup-item__name"
+                                                style="display:flex; align-items:center; gap:4px;">
+                                                <template x-if="!isEditing">
+                                                    <span
+                                                        style="max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"
+                                                        x-text="backup.custom_name || 'Backup ' + (index + 1)"></span>
+                                                </template>
+                                                <template x-if="!isEditing">
+                                                    <button
+                                                        @click="isEditing = true; editName = backup.custom_name || 'Backup ' + (index + 1)"
+                                                        title="Rename backup"
+                                                        style="background:none; border:none; cursor:pointer; font-size:.6rem; padding:0; opacity:.5; line-height:1; flex-shrink:0;">✏️</button>
+                                                </template>
+
+                                                <template x-if="isEditing">
+                                                    <input x-ref="editInput" type="text" x-model="editName"
+                                                        @keydown.enter="renameBackup(index, editName); isEditing = false"
+                                                        @keydown.escape="isEditing = false"
+                                                        style="max-width: 90px; font-size: 0.8rem; padding: 2px 4px; background: var(--c-surface2); color: var(--c-text); border: 1px solid var(--c-border2); border-radius: 4px;">
+                                                </template>
+                                                <template x-if="isEditing">
+                                                    <button @click="renameBackup(index, editName); isEditing = false"
+                                                        title="Save"
+                                                        style="background:none; border:none; cursor:pointer; font-size:.8rem; padding:0; line-height:1; flex-shrink:0;">✅</button>
+                                                </template>
+                                                <template x-if="isEditing">
+                                                    <button @click="isEditing = false" title="Cancel"
+                                                        style="background:none; border:none; cursor:pointer; font-size:.8rem; padding:0; line-height:1; flex-shrink:0;">❌</button>
+                                                </template>
+                                            </div>
+                                            <div class="backup-item__meta"
+                                                x-text="new Date(backup.timestamp).toLocaleString() + ' • ' + (backup.settings ? Object.keys(backup.settings).length : 0) + ' settings'">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="backup-item__actions">
+                                        <button class="backup-action-btn backup-action-btn--restore" @click="restoreBackup(index)"
+                                            title="Restore">📥</button>
+                                        <button class="backup-action-btn backup-action-btn--export" @click="exportBackup(index)"
+                                            title="Export">📤</button>
+                                        <button class="backup-action-btn backup-action-btn--delete" @click="deleteBackup(index)"
+                                            title="Delete">🗑️</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-    </aside>
+        </aside>
 
-    <!-- ════════════════════════════════
+        <!-- ════════════════════════════════
          RIGHT CONTENT AREA
          ════════════════════════════════ -->
-    <main class="content-area">
-
-        <!-- Command Core sticky header -->
-        <div class="cmd-header">
-            <span class="cmd-header__title">🛠️ Command Core</span>
-            <div class="cmd-header__actions">
-                <input type="text" id="cmd-search" class="cmd-search"
-                       placeholder="🔍 Filter commands…"
-                       oninput="filterCommands(this.value)">
-                <button class="mini-btn" onclick="toggleAllDetails()">
-                    <span id="expand-collapse-text">Expand All</span>
-                </button>
+        <main class="content-area" x-data="commandCore" @device-selected.window="handleDeviceSelection($event.detail)"
+            @device-info-loaded.window="handleDeviceSelection($event.detail)"
+            @refresh-command-states.window="if(deviceId) loadCommandStates(deviceId, true)">
+            <!-- Command Core sticky header -->
+            <div class="cmd-header">
+                <span class="cmd-header__title">🛠️ Command Core</span>
+                <div class="cmd-header__actions">
+                    <input type="text" id="cmd-search" class="cmd-search" placeholder="Search 44+ commands..."
+                        x-model="searchQuery">
+                    <button class="mini-btn" @click="toggleExpandAll()">
+                        <span id="expand-collapse-text" x-text="expandAll ? 'Collapse All' : 'Expand All'"></span>
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <!-- Dense table categories -->
-        <div id="categories-container" class="categories-table"></div>
+            <!-- Dense table categories -->
+            <div id="categories-container" class="categories-table">
+                <template x-for="category in filteredCategories()" :key="category.id">
+                    <div class="cat-group" x-data="{ expanded: true }"
+                        x-init="$watch('expandAll', val => expanded = val)">
+                        <div class="cat-group__hdr" @click="expanded = !expanded">
+                            <span class="cat-icon" x-text="getCategoryIcon(category.id)"></span>
+                            <span class="cat-name" x-text="category.name"></span>
+                            <span class="cat-desc" x-text="category.description"></span>
+                            <span class="impact-badge" :class="'impact-badge--' + category.impact"
+                                x-text="category.impact"></span>
+                            <span class="cat-collapse-arrow" :class="{ 'open': expanded }"
+                                x-text="expanded ? '▲' : '▼'"></span>
+                        </div>
 
-    </main>
-</div>
+                        <div class="cmd-rows" :class="{ 'hidden': !expanded }">
+                            <template x-for="command in category.commands" :key="command.name">
+                                <div x-data="{ detailVisible: false }"
+                                    x-init="$watch('expandAll', val => detailVisible = val)" style="display: contents;">
+                                    <div class="cmd-row" :class="{ 'samsung-only': command.samsung_only }"
+                                        :style="(!isSamsung && command.samsung_only) ? 'opacity: 0.5; pointer-events: none;' : ''">
+                                        <span class="cmd-row__name">
+                                            <span x-text="command.name"></span>
+                                            <template x-if="command.samsung_only">
+                                                <span class="samsung-badge">⚡ Samsung</span>
+                                            </template>
+                                        </span>
+                                        <span class="cmd-row__desc" x-text="command.description || ''"></span>
 
-<script src="/static/js/app.js"></script>
+                                        <div class="cmd-row__actions">
+                                            <button class="expand-btn"
+                                                @click.stop="detailVisible = !detailVisible">Details</button>
+
+                                            <div class="toggle-switch" :class="{ 
+                                                 'disabled': !deviceId || (!isSamsung && command.samsung_only),
+                                                 'active': states[command.name] === true,
+                                                 'loading': states[command.name] === 'loading'
+                                             }" @click="toggleCommand(command)">
+                                                <div class="toggle-switch__slider"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="cmd-detail-row" :class="{ 'hidden': !detailVisible }"
+                                        x-show="detailVisible" style="display:none;">
+                                        <div x-text="command.explanation"></div>
+                                        <template x-if="command.disable_cmd">
+                                            <div class="cmd-code" x-text="'disable: adb ' + command.disable_cmd"></div>
+                                        </template>
+                                        <template x-if="command.enable_cmd">
+                                            <div class="cmd-code" x-text="'enable:  adb ' + command.enable_cmd"></div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="/static/js/components.js"></script>
+    <script src="/static/js/app.js"></script>
 </body>
+
 </html>
